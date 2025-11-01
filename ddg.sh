@@ -27,24 +27,49 @@ generate_alias() {
 
 show_history() {
     if [ -f "$LOG_FILE" ]; then
+        sed -n '/Generated 30 Aliases:/p; s/.* - //p; /^$/p' "$LOG_FILE"
+    else
+        echo "No aliases history found."
+    fi
+}
+
+show_verbose_history() {
+    if [ -f "$LOG_FILE" ]; then
         cat "$LOG_FILE"
     else
         echo "No aliases history found."
     fi
 }
 
+generate_all_aliases() {
+    trap 'echo "" >> "$LOG_FILE"' INT
+    echo -e "\nGenerated 30 Aliases:" >> "$LOG_FILE"
+    for (( i=0; i < 30; i++ )); do
+        generate_alias
+    done
+    echo "" >> "$LOG_FILE"
+}
+
 show_menu() {
     echo "Please choose an option:"
     echo "1 - Generate email alias"
     echo "2 - Show aliases history"
+    echo "3 - Show verbose aliases history"
+    echo "4 - Generate all aliases"
 
-    read -p "Enter your choice (1 or 2): " choice
+    read -p "Enter your choice (1 - 4): " choice
     case $choice in
         1)
             generate_alias
             ;;
         2)
             show_history
+            ;;
+        3)
+            show_verbose_history
+            ;;
+        4)
+            generate_all_aliases
             ;;
         *)
             echo "Invalid choice. Please run the script again and select a valid option."
@@ -54,14 +79,20 @@ show_menu() {
 
 if [ -n "$1" ]; then
     case $1 in
-        generate)
+        generate|1)
             generate_alias
             ;;
-        history)
+        history|2)
             show_history
             ;;
+        verbose_history|3)
+            show_verbose_history
+            ;;
+        generate_all|4)
+            generate_all_aliases
+            ;;
         *)
-            echo "Usage: $0 [generate|history]"
+            echo "Usage: $0 [generate|history|verbose_history|generate_all]"
             ;;
     esac
 else
